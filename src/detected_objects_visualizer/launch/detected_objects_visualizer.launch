@@ -1,0 +1,32 @@
+<launch>
+  <arg name="objects_src_topic"           default="/objects" />
+  <arg name="tracker_src_topic"           default="/tracker_objects" />
+  <arg name="object_speed_threshold"      default="0.1" />
+  <arg name="arrow_speed_threshold"       default="0.25" />
+  <arg name="marker_display_duration"     default="0.8" />
+  <arg name="label_color"                 default="[255.0, 255.0, 255.0, 1.0]" />
+  <arg name="arrow_color"                 default="[0.0, 255.0, 0.0, 0.8]" />
+  <arg name="hull_color"                  default="[51.0, 204.0, 51.0, 0.8]" />
+  <arg name="box_color"                   default="[51.0, 128.0, 204.0, 0.8]" />
+  <arg name="model_color"                 default="[190.0, 190.0, 190.0, 0.5]" />
+  <arg name="centroid_color"              default="[77.0, 121.0, 255.0, 0.8]" />
+  <arg name="tracker_color"               default="[255.0, 0.0, 0.0, 0.5]" />
+
+  <node pkg="detected_objects_visualizer" type="visualize_detected_objects" name="visualize_detected_objects"
+        output="screen" ns="/detection/lidar_detector" />
+
+        <param name="objects_src_topic"          value="$(arg objects_src_topic)" />
+        <param name="tracker_src_topic"          value="$(arg tracker_src_topic)" />
+        <param name="object_speed_threshold"     value="$(arg object_speed_threshold)" />
+        <param name="arrow_speed_threshold"      value="$(arg arrow_speed_threshold)" />
+        <param name="marker_display_duration"    value="$(arg marker_display_duration)" />
+        <param name="label_color"                value="$(arg label_color)" />
+        <param name="arrow_color"                value="$(arg arrow_color)" />
+        <param name="hull_color"                 value="$(arg hull_color)" />
+        <param name="box_color"                  value="$(arg box_color)" />
+        <param name="model_color"                value="$(arg model_color)" />
+        <param name="centroid_color"             value="$(arg centroid_color)" />
+        <param name="tracker_color"              value="$(arg tracker_color)" />
+        
+  <node pkg="rviz" type="rviz" name="rviz" args="-d $(find detected_objects_visualizer)/rviz/pointpillarTest.rviz"/>
+</launch>

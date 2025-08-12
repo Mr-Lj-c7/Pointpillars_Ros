@@ -1,0 +1,32 @@
+<launch>
+  <!-- <arg name="input_topic"          default="/kitti/velo/pointcloud" /> -->
+  <arg name="input_topic"          default="/ns1/lidar_points" />
+  <arg name="output_topic"         default="/detection/lidar_detector/objects" />
+  <arg name="tracker_output_topic" default="/detection/lidar_detector/tracker_objects" />
+  <arg name="baselink_support"     default="false" />
+  <arg name="use_onnx"             default="true"/>
+  <arg name="point_xyzi"           default="false"/>
+  <arg name="use_tracking"         default="true"/>
+  <arg name="use_kf_tracking"      default="false"/>
+  <!-- <arg name="pfe_onnx_file"        default="/home/user/ChangTing/Code/Openpcdet/Pointpillars_Ros/src/lidar_point_pillars/model/ckpt_120/pointpillar.onnx"/> -->
+  <!-- <arg name="pfe_onnx_file"        default="/home/user/ChangTing/Code/Openpcdet/Pointpillars_Ros/src/lidar_point_pillars/model/ckpt_80/pointpillar.onnx"/> -->
+  <!-- <arg name="pfe_onnx_file"        default="/home/user/ChangTing/Code/Openpcdet/Pointpillars_Ros/src/lidar_point_pillars/model/ckpt_80_lj/lj_80.onnx"/> -->
+  <arg name="pfe_onnx_file"        default="/home/user/ChangTing/Code/Openpcdet/Pointpillars_Ros/src/lidar_point_pillars/model/ckpt_200_custom/pointpillar_custom_200.onnx"/>
+  
+  <!-- rviz可视化 -->
+  <include file="$(find detected_objects_visualizer)/launch/detected_objects_visualizer.launch" /> 
+  
+  <node pkg="lidar_point_pillars" type="lidar_point_pillars" name="lidar_point_pillars" output="screen" >
+    <!-- <remap from="/points_raw" to="$(arg input_topic)"/> -->
+    
+    <param name="output_topic"         value="$(arg output_topic)" />
+    <param name="tracker_output_topic" value="$(arg tracker_output_topic)" />
+    <param name="input_topic"          value="$(arg input_topic)" />
+    <param name="baselink_support"     value="$(arg baselink_support)" />
+    <param name="use_onnx"             value="$(arg use_onnx)" />
+    <param name="point_xyzi"           value="$(arg point_xyzi)" />
+    <param name="use_tracking"         value="$(arg use_tracking)" />
+    <param name="pfe_onnx_file"        value="$(arg pfe_onnx_file)" />
+  </node>
+
+</launch>

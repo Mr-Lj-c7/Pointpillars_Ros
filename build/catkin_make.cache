@@ -1,0 +1,2 @@
+autoware_msgs:detected_objects_visualizer:lidar_point_pillars
+-DCATKIN_DEVEL_PREFIX=/home/user/ChangTing/Code/Openpcdet/Pointpillars_Ros/devel -DCMAKE_INSTALL_PREFIX=/home/user/ChangTing/Code/Openpcdet/Pointpillars_Ros/install -G Unix Makefiles

@@ -1,0 +1,8 @@
+prefix=/home/user/ChangTing/Code/Openpcdet/Pointpillars_Ros/devel
+
+Name: lidar_point_pillars
+Description: Description of lidar_point_pillars
+Version: 0.0.0
+Cflags: -I/home/user/ChangTing/Code/Openpcdet/Pointpillars_Ros/src/lidar_point_pillars/include
+Libs: -L${prefix}/lib 
+Requires: roslib pcl_ros autoware_msgs
