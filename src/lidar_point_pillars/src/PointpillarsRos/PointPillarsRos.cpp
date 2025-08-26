@@ -11,7 +11,7 @@ namespace PointPillarsNS
   PointPillarsROS::PointPillarsROS()
   : private_nh_("~")
   , NUM_POINT_FEATURE_(5)
-  , TRAINED_SENSOR_HEIGHT_(1.73f)
+  , TRAINED_SENSOR_HEIGHT_(1.73f)    // 传感器高度
   , BASELINK_FRAME_("base_link")
   {
     //ros related param
@@ -43,9 +43,9 @@ namespace PointPillarsNS
   }
   
   /**
-   * @brief 显示GPU信息
+   * @brief 查看GPU信息
    * @def Getinfo
-   * @return void
+   * @return null
    */
   void PointPillarsROS::Getinfo(void)
   {
@@ -70,10 +70,10 @@ namespace PointPillarsNS
   }
   
   /**
-   * @brief 将点云坐标系转换到 baselink 坐标系
+   * @brief lidar坐标系转换到baselink坐标系
    * @def getTransformedPose
-   * @param in_pose: 输入的点云坐标系下的pose
-   * @param tf: baselink坐标系到点云坐标系的变换
+   * @param[in] in_pose: lidar坐标系下的pose
+   * @param[in] tf:      baselink坐标系到lidar坐标系的变换
    * @return transformed pose
    */
   geometry_msgs::Pose PointPillarsROS::getTransformedPose(const geometry_msgs::Pose& in_pose, const tf::Transform& tf)
@@ -89,9 +89,9 @@ namespace PointPillarsNS
   /**
    * @brief 发布pointpillars模型检测结果
    * @def pubDetectedObject
-   * @param nms_pred: 检测结果
-   * @param in_header: 点云header
-   * @return void
+   * @param[in] nms_pred:  3d box
+   * @param[in] in_header: 点云header
+   * @return null
    */
   void PointPillarsROS::pubDetectedObject(
     const std::vector<Bndbox>& nms_pred,
@@ -106,20 +106,15 @@ namespace PointPillarsNS
         obj.header = in_header;
         obj.valid = true;
         obj.pose_reliable = true;
-        // pose x, y, z 规则滤除
-        // if ((box.x <= 1.75f && box.x >= -1.5f) || 
-        //     (box.y <= 1.5f && box.y >= -1.5f)  || 
-        //     (box.y > 15.f || box.y < -15.f)    ||
-        //     (box.z > 2.25f || box.z < -1.5f)){continue;}
-        // else
-        // {
-        //   obj.pose.position.x = box.x;
-        //   obj.pose.position.y = box.y;
-        //   obj.pose.position.z = box.z;
-        // }
-        obj.pose.position.x = box.x;
-        obj.pose.position.y = box.y;
-        obj.pose.position.z = box.z;
+        // pose x, y, z 规则滤除车身
+        if ((box.x <= 2.f && box.x >= -2.f) || (box.y <= 1.f && box.y >= -1.f)) 
+          { continue; }
+        else
+          {
+            obj.pose.position.x = box.x;
+            obj.pose.position.y = box.y;
+            obj.pose.position.z = box.z;
+          }
         // pose roll, pitch, yaw
         // float yaw = box.rt;
         /* 
@@ -134,35 +129,28 @@ namespace PointPillarsNS
         obj.pose.orientation = q;
         if (baselink_support_)
         {
-          obj.pose = getTransformedPose(obj.pose, angle_transform_inversed_);
-          // obj.pose = getTransformedPose(obj.pose, baselink2lidar_);  // lidar坐标系下obj的位姿变换到baselink坐标系
+          obj.pose = getTransformedPose(obj.pose, baselink2lidar_);  // lidar坐标系下obj的位姿变换到baselink坐标系
         }
-        // w, l, h
-        float width_, length_;
-        if (box.w > box.l)
-        {
-          length_ = box.w;
-          width_ = box.l;
-        }
-        else
-        {
-          length_ = box.l;
-          width_ = box.w;
-        }
-        if ((length_ <= 0.f || width_ <= 0.f) || 
-            (length_ > 6.f  || width_ > 3.f)  || 
-            (box.h   <= 0.f || box.h  > 4.5f)) {continue;}
-        else
-        { 
-          obj.dimensions.x = box.w;
-          obj.dimensions.y = box.l;
-          obj.dimensions.z = box.h;
-        }
-        // label: 0-car, 1-pedestrian, 2-cyclist
-        if(box.id == 0){obj.label = "car";} 
-        else if (box.id == 1){obj.label = "pedestrian";}
-        else if (box.id == 2){obj.label = "cyclist";}
-        else{continue;}
+        obj.dimensions.x = box.w;
+        obj.dimensions.y = box.l;
+        obj.dimensions.z = box.h;
+        // kitti label: 0-car, 1-pedestrian, 2-cyclist
+        // if(box.id == 0){obj.label = "car";} 
+        // else if (box.id == 1){obj.label = "pedestrian";}
+        // else if (box.id == 2){obj.label = "cyclist";}
+        // else{continue;}
+
+        // custom label { "Car","Bus","Pedestrian","Motorcycle",}
+        if (box.id == 0)
+          {obj.label = "Car";} 
+        else if (box.id == 1)
+          {obj.label = "Bus";}
+        else if (box.id == 2)
+          {obj.label = "Pedestrian";}
+        else if (box.id == 3)
+          {obj.label = "Motorcycle";}
+        else 
+          {continue;}
         obj.id = obj_id;
         obj.score = box.score;
         detection_objects.push_back(obj);
@@ -202,30 +190,30 @@ namespace PointPillarsNS
     }
   
   /**
-   * @brief 从baselink到lidar的变换信息中分析出z轴的偏移量
-   * @def analyzeTFInfo
-   * @param baselink2lidar: baselink到lidar的变换
-   * @return void
+   * @brief baselink到lidar的坐标变换
+   * @def   analyzeTFInfo
+   * @param[in] baselink2lidar: baselink到lidar的变换矩阵
+   * @return null
    */
   void PointPillarsROS::analyzeTFInfo(tf::StampedTransform baselink2lidar)
   {
-    tf::Vector3 v = baselink2lidar.getOrigin();  // 获取baselink坐标系到lidar坐标系的偏移量position
+    tf::Vector3 v = baselink2lidar.getOrigin();  // baselink坐标系到lidar坐标系的偏移量position
     offset_z_from_trained_data_ = v.getZ() - TRAINED_SENSOR_HEIGHT_;
     // ROS_INFO("offset_z_from_trained_data_: %f", offset_z_from_trained_data_);
     // ROS_INFO("offset_x_: %f", v.getX());
     // ROS_INFO("offset_y_: %f", v.getY());
     // ROS_INFO("offset_z_: %f", v.getZ());
 
-    tf::Quaternion q = baselink2lidar.getRotation();  // 获取baselink坐标系到lidar坐标系的旋转量orientation
+    tf::Quaternion q = baselink2lidar.getRotation();  // baselink坐标系到lidar坐标系的旋转量orientation
     angle_transform_ = tf::Transform(q);
     angle_transform_inversed_ = angle_transform_.inverse();
   }
   
   /**
-   * @brief 从tf监听中获取baselink到lidar的变换信息
-   * @def getBaselinkToLidarTF
-   * @param target_frameid: lidar坐标系
-   * @return void
+   * @brief tf监听 baselink到lidar的坐标变换
+   * @def   getBaselinkToLidarTF
+   * @param[in] target_frameid: lidar坐标系
+   * @return null
    */
   void PointPillarsROS::getBaselinkToLidarTF(const std::string& target_frameid)
   {
@@ -245,11 +233,11 @@ namespace PointPillarsNS
   }
   
   /**
-   * @brief 将点云数据保存到本地文件
-   * @def pclSave
-   * @param in_pcl_pc_ptr: 输入点云数据
-   * @param suffix: 文件名后缀
-   * @return void
+   * @brief 本地存储点云（调试）
+   * @def   pclSave
+   * @param[in] in_pcl_pc_ptr: 输入点云
+   * @param[in] suffix:        文件名字段
+   * @return null
    */
   void PointPillarsROS::pclSave(
     const pcl::PointCloud<pcl::PointXYZI>::Ptr& in_pcl_pc_ptr, 
@@ -277,12 +265,12 @@ namespace PointPillarsNS
   }
   
   /**
-   * @brief 将点云数据转化为数组
-   * @def pclToArray
-   * @param in_pcl_pc_ptr: 输入点云数据
-   * @param out_points_array: 输出数组
-   * @param offset_z: 点云数据z轴偏移量
-   * @return void
+   * @brief 点云数据量化量化为pointpillar模型输入格式
+   * @def   pclToArray
+   * @param[in] in_pcl_pc_ptr:     输入点云
+   * @param[out] out_points_array: 输出数组
+   * @param[in] offset_z:          点云z轴偏移(传感器高度)
+   * @return null
    */
   void PointPillarsROS::pclToArrayI(
     const pcl::PointCloud<pcl::PointXYZI>::Ptr& in_pcl_pc_ptr, 
@@ -319,10 +307,10 @@ namespace PointPillarsNS
   }
   
   /**
-   * @brief 点云数据回调函数
-   * @def pointsCallback
-   * @param msg: 输入点云数据
-   * @return void
+   * @brief  点云数据回调函数
+   * @def    pointsCallback
+   * @param[in] msg: 输入点云
+   * @return null
    */
   void PointPillarsROS::pointsCallback(const sensor_msgs::PointCloud2::ConstPtr& msg)
   { 
@@ -358,7 +346,7 @@ namespace PointPillarsNS
         pclToArrayI(cloud, points, offset_z_);
       }
       // pclSave(cloud, msg->header.seq);
-      std::cout << "<<<<<<<<<<<" << std::endl;
+      std::cout << ">>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
       float *points_data = nullptr;
       unsigned int points_data_size = points_size * 4 * sizeof(float);
       checkCudaErrors(cudaMallocManaged((void **)&points_data, points_data_size));
@@ -380,13 +368,13 @@ namespace PointPillarsNS
       pubDetectedObject(nms_pred, msg->header);
       nms_pred.clear();
       delete[] points;
-      std::cout << ">>>>>>>>>>>" << std::endl;
+      std::cout << "<<<<<<<<<<<<<<<<<<<<<<<" << std::endl;
   }
   
   /**
-   * @brief create ROS pub and sub
-   * @def createROSPubSub
-   * @return void
+   * @brief ros 订阅、发布
+   * @def   createROSPubSub
+   * @return null
    */
   void PointPillarsROS::createROSPubSub()
   {
@@ -399,9 +387,9 @@ namespace PointPillarsNS
   }
 
   /**
-   * @brief run
-   * @def run
-   * @return void
+   * @brief  启动函数
+   * @def    run
+   * @return null
    */
   void PointPillarsROS::run()
   {

@@ -104,7 +104,7 @@
   使用pth模型推理单帧数据
 
 <p align="center">
-  <img src="src/result/PointPillaTestLj.png" width="75%" height="320">
+  <img src="src/result/PointpillarCustom_02.png" width="90%" height="640">
 </p>
 
 ```bash
@@ -152,7 +152,7 @@
 2. [说明]基于CUDA、TensorRT部署pointpillar模型,结合ROS1进行3D目标检测并发布车辆坐标系下的目标检测结果，共有[autoware_msgs]、[detected_objects_visualizer]、[lidar_point_pillars]3个功能包、[部署参考](https://blog.csdn.net/h904798869/article/details/132411664),验证自定义模型范围时请修改Pointpillars/params.h文件中的MARK参数。
 
 <p align="center">
-  <img src="src/result/PointpillarsKittiSceneRos_02.gif" width="75%" height="320">
+  <img src="src/result/PointpillarsKittiSceneRos_02.gif" width="90%" height="640">
 </p>
 
 ```bash
@@ -209,7 +209,7 @@ custom
 [说明]：模型训练完成后保存在/Openpcdet/output/kitti_models/pointpillar_custom/default/中，调用/Openpcdet/tools/demo.py进行pth模型推理并可视化，其中demopy文件，自定义模型中的类别标签值从1开始，而kitti中需要从0开始，经过修改可正常调用。
 
 <p align="center">
-  <img src="src/result/PointpillarCustom_02.png" width="75%" height="320">
+  <img src="src/result/trimmed-video.gif" width="90%" height="640">
 </p>
 
 ```bash
@@ -231,7 +231,7 @@ custom
 [说明]：本项目模型部署基于NVIDIA TensorRt进行模型推理，基于ROS中间件进行检测结果消息发布并可视化，Pointpillars_Ros工作空间下共有3个ros功能包，[autoware_msgs]：用于定义发布的消息类型，[detected_objects_visualizer]：用于可视化pointpillar模型推理结果，[lidar_point_pillars]：基于NVIDIA TensorRt进行模型推理，并发布推理结果消息，同时支持卡尔曼滤波跟踪、与基于距离的目标跟踪。将onnx模型放在/Pointpillars_Ros/src/lidar_point_pillars/model/路径下，并在launch文件中修改模型路径。（注意，如果修改自定义模型的类别和检测范围需要更改）/Pointpillars_Ros/src/lidar_point_pillars/include/params.h文件参数。
 
 <p align="center">
-  <img src="src/result/PointpillarCustomRos.png" width="75%" height="320">
+  <img src="src/result/PointpillarCustomRos.png" width="90%" height="640">
 </p>
 
 ```bash

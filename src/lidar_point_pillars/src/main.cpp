@@ -14,6 +14,15 @@ enum class_enum
   Cyclist = 2      // 自行车
 }; 
 
+// Class names for custom dataset { "Car","Bus","Pedestrian","Motorcycle",}
+enum CLASS_ENUM 
+{
+  Car_ = 0,         
+  Bus_ = 1,
+  Pedestrian_ = 2,  
+  Motorcycle_ = 3      
+}; 
+
 /**
  * @brief cudaGetErrorString(status) - 错误字符串
  * @brief __LINE__ - 行号
