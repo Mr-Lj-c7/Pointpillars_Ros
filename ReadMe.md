@@ -1,7 +1,7 @@
-# Pointpillars_Ros
+# Pointpillars - Ros 
 
 ## 项目说明
-该项目主要用于实现将训练好的激光雷达感知检测模型（pointpillar）基于NVIDIA TensorRt进行部署推理，并利用中间件ROS进行检测结果的消息发布与可视化评估。
+该项目主要用于实现将训练好的激光雷达感知检测模型（pointpillar）在NVIDIA GeoForce RTX 4060 GPU 上基于TensorRt库进行加速推理，并利用中间件ROS1进行模型推理结果的消息发布与可视化评估。
 
 ## 项目需求
 
@@ -19,7 +19,7 @@
 
 
 ## 项目架构
-'''
+``` bash
 Pointpillars_Ros
 |_build                           # 编译空间
 |_devel                           # 开发空间，存放可执行文件
@@ -33,13 +33,13 @@ Pointpillars_Ros
 |_start.sh                        # 项目启动脚本
 |_PointpillarRecord.md            # pointpillar感知模型记录文件
 |_ReadMe.md                       # 项目说明文件
-'''
+```
 
 
 ## 项目启动
-[说明]：将onnx模型放在/Pointpillars_Ros/src/lidar_point_pillars/model/路径下，并在lidar_point_pillars.launch文件中修改模型路径。（注意，如果修改自定义模型的类别和检测范围需要更改/Pointpillars_Ros/src/lidar_point_pillars/include/params.h文件参数。）
+[说明]：将导出的onnx格式模型放在/Pointpillars_Ros/src/lidar_point_pillars/model/路径下，并在lidar_point_pillars.launch文件中对应修改模型路径（注意，如果修改自定义模型的类别和检测范围需要更改/Pointpillars_Ros/src/lidar_point_pillars/include/params.h文件参数）。
 
-'''bash
+```bash
 
 roscore
 
@@ -51,5 +51,5 @@ catkin_make -j4 --pkg detected_objects_visualizer  && catkin_make -j4 --pkg lida
 
 bash start.sh
 
-'''
+```
 
